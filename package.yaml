@@ -20,7 +20,17 @@ extra-source-files:
 description:         Please see the README on GitHub at <https://github.com/JBlackN/saved-for-reddit#readme>
 
 dependencies:
+- aeson
 - base >= 4.7 && < 5
+- base64-bytestring
+- blaze-html
+- blaze-markup
+- bytestring
+- clay
+- http-conduit
+- scotty
+- text
+- yaml
 
 library:
   source-dirs: src
