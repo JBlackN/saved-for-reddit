@@ -8,6 +8,7 @@ import Text.Blaze.Html.Renderer.Pretty (renderHtml)
 import Web.Scotty
 
 import SfR.Config (callback_url, client_id, sfr_config)
+import SfR.Reddit (identity)
 import SfR.Reddit.Auth (get_access_token)
 import SfR.Reddit.Types
 import SfR.Templates.Html (landing_html)
@@ -24,11 +25,12 @@ login = do
       client_id ++
       "&response_type=code&state=placeholder&redirect_uri=" ++
       callback_url ++
-      "&duration=temporary&scope=history"
+      "&duration=temporary&scope=identity,history"
     )
 
 callback :: ActionM ()
 callback = do
   code <- param "code"
   token <- liftIO $ liftM access_token (get_access_token code)
-  html $ TL.pack $ token
+  username <- liftIO $ liftM name (identity token)
+  html $ TL.pack username

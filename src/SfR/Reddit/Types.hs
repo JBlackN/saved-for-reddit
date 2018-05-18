@@ -10,4 +10,8 @@ data AccessToken = AccessToken { access_token :: String
                                , scope        :: String
                                } deriving (Generic, Show)
 
+data RedditUser = RedditUser { name :: String
+                             } deriving (Generic, Show)
+
 instance FromJSON AccessToken
+instance FromJSON RedditUser
