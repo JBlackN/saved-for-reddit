@@ -8,9 +8,10 @@ import Text.Blaze.Html.Renderer.Pretty (renderHtml)
 import Web.Scotty
 
 import SfR.Config (callback_url, client_id, sfr_config)
-import SfR.Reddit (identity)
+import SfR.Reddit (identity, savedPosts, savedComments)
 import SfR.Reddit.Auth (get_access_token)
 import SfR.Reddit.Types
+import SfR.Storage (get_or_create_user, normalize_saved, update_saved)
 import SfR.Templates.Html (landing_html)
 
 landing :: ActionM ()
@@ -32,5 +33,13 @@ callback :: ActionM ()
 callback = do
   code <- param "code"
   token <- liftIO $ liftM access_token (get_access_token code)
+
   username <- liftIO $ liftM name (identity token)
-  html $ TL.pack username
+  savedPosts <- liftIO $ savedPosts token username ""
+  savedComments <- liftIO $ savedComments token username ""
+
+  userId <- liftIO $ get_or_create_user username
+  let savedItems = normalize_saved userId savedPosts savedComments
+  liftIO $ update_saved savedItems
+
+  html $ "Done"

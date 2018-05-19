@@ -9,6 +9,7 @@ import GHC.Generics
 data SfRConfig = SfRConfig { callback_url :: String
                            , client_id :: String
                            , client_secret :: String
+                           , db_file :: String
                            , port :: Int
                            } deriving (Generic, Show)
 instance FromJSON SfRConfig

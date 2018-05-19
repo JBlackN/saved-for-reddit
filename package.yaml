@@ -28,6 +28,9 @@ dependencies:
 - bytestring
 - clay
 - http-conduit
+- persistent
+- persistent-sqlite
+- persistent-template
 - scotty
 - text
 - yaml
