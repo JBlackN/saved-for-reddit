@@ -32,7 +32,9 @@ dependencies:
 - persistent-sqlite
 - persistent-template
 - scotty
+- scotty-cookie
 - text
+- uuid
 - yaml
 
 library:

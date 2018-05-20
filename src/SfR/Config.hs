@@ -11,6 +11,7 @@ data SfRConfig = SfRConfig { callback_url :: String
                            , client_secret :: String
                            , db_file :: String
                            , port :: Int
+                           , secure_cookie :: Bool
                            } deriving (Generic, Show)
 instance FromJSON SfRConfig
 

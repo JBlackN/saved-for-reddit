@@ -10,7 +10,13 @@
 module SfR.Storage where
 
 import Control.Monad (forM_, liftM)
+import Control.Monad.IO.Class (liftIO)
+import Data.ByteString as BS hiding (map)
+import Data.ByteString.Base64 as B64
+import Data.Int (Int64)
 import Data.Text as T hiding (map)
+import Data.UUID (toString)
+import Data.UUID.V4 (nextRandom)
 import Database.Persist
 import Database.Persist.Sqlite
 import Database.Persist.TH
@@ -22,6 +28,7 @@ import SfR.Reddit.Types.Post as TP
 share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
 User
   username String
+  sessionKey String
   UniqueUser username
   deriving Show
 SavedItem
@@ -41,20 +48,24 @@ SavedItem
   deriving Show
 |]
 
-get_or_create_user :: String -> IO (Key User)
+get_or_create_user :: String -> IO (Int64, User)
 get_or_create_user username = do
   db_file <- liftM db_file sfr_config
   runSqlite (T.pack db_file) $ do
     runMigration migrateAll
+    sessionKey <- liftIO $ liftM toString nextRandom
     maybeUser <- getBy $ UniqueUser username
     case maybeUser of
       Nothing -> do
-        userId <- insert $ User username
-        return userId
+        userId <- insert $ User username sessionKey
+        Just user <- get userId
+        return $ (fromSqlKey userId, user)
       Just (Entity userId user) -> do
-        return userId
+        update userId [UserSessionKey =. sessionKey]
+        Just user <- get userId
+        return $ (fromSqlKey userId, user)
 
-normalize_saved :: Key User -> [SavedPostData] -> [SavedCommentData] -> [SavedItem]
+normalize_saved :: Int64 -> [SavedPostData] -> [SavedCommentData] -> [SavedItem]
 normalize_saved userId posts comments =
   (map normalize_post posts) ++ (map normalize_comment comments)
   where normalize_post post =
@@ -73,7 +84,7 @@ normalize_saved userId posts comments =
                     , savedItemSubreddit = TP.subreddit post
                     , savedItemScore = TP.score post
                     , savedItemCreatedUtc = TP.created_utc post
-                    , savedItemUserId = userId
+                    , savedItemUserId = toSqlKey userId
                     }
         normalize_comment comment =
           SavedItem { savedItemIdentifier = TC.name comment
@@ -87,7 +98,7 @@ normalize_saved userId posts comments =
                     , savedItemSubreddit = TC.subreddit comment
                     , savedItemScore = TC.score comment
                     , savedItemCreatedUtc = TC.created_utc comment
-                    , savedItemUserId = userId
+                    , savedItemUserId = toSqlKey userId
                     }
 
 update_saved :: [SavedItem] -> IO ()
