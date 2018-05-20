@@ -2,6 +2,7 @@
 module SfR.Reddit.Types.Comment where
 
 import Data.Aeson
+import Data.Int (Int64)
 import GHC.Generics
 
 data CommentListing = CommentListing { data' :: CommentListingData
@@ -20,10 +21,10 @@ data SavedCommentData = SavedCommentData { name :: String
                                          , subreddit :: String
                                          , body_html :: String
                                          , score :: Int
-                                         , created_utc :: Double
+                                         , permalink :: String
+                                         , created_utc :: Int64
                                          , link_author :: String
                                          , link_title :: String
-                                         , link_url :: String
                                          , link_permalink :: String
                                          } deriving (Generic, Show)
 

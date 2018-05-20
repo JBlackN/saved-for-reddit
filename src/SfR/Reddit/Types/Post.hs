@@ -2,6 +2,7 @@
 module SfR.Reddit.Types.Post where
 
 import Data.Aeson
+import Data.Int (Int64)
 import GHC.Generics
 
 data PostListing = PostListing { data' :: PostListingData
@@ -24,7 +25,7 @@ data SavedPostData = SavedPostData { name :: String
                                    , title :: String
                                    , url :: String
                                    , permalink :: String
-                                   , created_utc :: Double
+                                   , created_utc :: Int64
                                    } deriving (Generic, Show)
 
 instance FromJSON PostListing where

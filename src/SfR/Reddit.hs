@@ -31,7 +31,7 @@ savedPosts access_token username after = do
   let auth_header = BS.concat ["Bearer ", BSC.pack access_token]
   let user_agent_header = BSC.pack user_agent
   let path = "/user/" ++ username ++ "/saved"
-  let query = "?type=links&sort=new&t=all&limit=100&after=" ++ after
+  let query = "?type=links&sort=new&t=all&limit=100&raw_json=1&after=" ++ after
 
   request''    <- parseRequest ("https://oauth.reddit.com" ++ path ++ query)
   let request' =  addRequestHeader "User-Agent" user_agent_header request''
@@ -53,7 +53,7 @@ savedComments access_token username after = do
   let auth_header = BS.concat ["Bearer ", BSC.pack access_token]
   let user_agent_header = BSC.pack user_agent
   let path = "/user/" ++ username ++ "/saved"
-  let query = "?type=comments&sort=new&t=all&limit=100&after=" ++ after
+  let query = "?type=comments&sort=new&t=all&limit=100&raw_json=1&after=" ++ after
 
   request''    <- parseRequest ("https://oauth.reddit.com" ++ path ++ query)
   let request' =  addRequestHeader "User-Agent" user_agent_header request''

@@ -43,7 +43,7 @@ SavedItem
   body String Maybe
   subreddit String
   score Int
-  createdUtc Double
+  createdUtc Int64
   userId UserId
   UniqueSavedItem userId identifier
   deriving Show
@@ -96,10 +96,13 @@ normalize_saved userId posts comments =
                                            in case thumbnail of
                                                 "self"    -> Nothing
                                                 "default" -> Nothing
+                                                "image"   -> Nothing
+                                                "nsfw"    -> Nothing
+                                                "spoiler" -> Nothing
                                                 otherwise -> Just thumbnail
                     , savedItemTitle = TP.title post
                     , savedItemLink = TP.url post
-                    , savedItemPermalink = TP.permalink post
+                    , savedItemPermalink = "https://www.reddit.com" ++ (TP.permalink post)
                     , savedItemBody = TP.selftext_html post
                     , savedItemSubreddit = TP.subreddit post
                     , savedItemScore = TP.score post
@@ -112,8 +115,8 @@ normalize_saved userId posts comments =
                     , savedItemParentAuthor = Just (TC.link_author comment)
                     , savedItemThumbnail = Nothing
                     , savedItemTitle = TC.link_title comment
-                    , savedItemLink = TC.link_url comment
-                    , savedItemPermalink = TC.link_permalink comment
+                    , savedItemLink = TC.link_permalink comment
+                    , savedItemPermalink = "https://www.reddit.com" ++ (TC.permalink comment)
                     , savedItemBody = Just (TC.body_html comment)
                     , savedItemSubreddit = TC.subreddit comment
                     , savedItemScore = TC.score comment
