@@ -7,15 +7,15 @@ import Data.Text hiding (take)
 import GHC.Generics
 
 data PostListing = PostListing { data' :: PostListingData
-                               } deriving (Generic, Show)
+                               } deriving (Generic, Show, Eq)
 
 data PostListingData = PostListingData { after :: Maybe String
                                        , children :: [SavedPost]
-                                       } deriving (Generic, Show)
+                                       } deriving (Generic, Show, Eq)
 
 data SavedPost = SavedPost { kind'' :: String
                            , data'' :: SavedPostData
-                           } deriving (Generic, Show)
+                           } deriving (Generic, Show, Eq)
 
 data SavedPostData = SavedPostData { name :: String
                                    , author :: String
@@ -27,7 +27,7 @@ data SavedPostData = SavedPostData { name :: String
                                    , url :: String
                                    , permalink :: String
                                    , created_utc :: Int64
-                                   } deriving (Generic, Show)
+                                   } deriving (Generic, Show, Eq)
 
 instance FromJSON PostListing where
   parseJSON = genericParseJSON defaultOptions {

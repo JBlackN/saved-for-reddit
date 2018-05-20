@@ -49,7 +49,7 @@ SavedItem
   createdUtc Int64
   userId UserId
   UniqueSavedItem userId identifier
-  deriving Show Generic
+  deriving Show Generic Eq
 |]
 
 instance ToJSON SavedItem

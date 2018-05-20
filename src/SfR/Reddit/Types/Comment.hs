@@ -7,15 +7,15 @@ import Data.Text hiding (take)
 import GHC.Generics
 
 data CommentListing = CommentListing { data' :: CommentListingData
-                                     } deriving (Generic, Show)
+                                     } deriving (Generic, Show, Eq)
 
 data CommentListingData = CommentListingData { after :: Maybe String
                                              , children :: [SavedComment]
-                                             } deriving (Generic, Show)
+                                             } deriving (Generic, Show, Eq)
 
 data SavedComment = SavedComment { kind'' :: String
                                  , data'' :: SavedCommentData
-                                 } deriving (Generic, Show)
+                                 } deriving (Generic, Show, Eq)
 
 data SavedCommentData = SavedCommentData { name :: String
                                          , author :: String
@@ -27,7 +27,7 @@ data SavedCommentData = SavedCommentData { name :: String
                                          , link_author :: String
                                          , link_title :: String
                                          , link_permalink :: String
-                                         } deriving (Generic, Show)
+                                         } deriving (Generic, Show, Eq)
 
 instance FromJSON CommentListing where
   parseJSON = genericParseJSON defaultOptions {
