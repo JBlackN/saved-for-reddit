@@ -27,6 +27,7 @@ dependencies:
 - blaze-markup
 - bytestring
 - clay
+- containers
 - http-conduit
 - persistent
 - persistent-sqlite

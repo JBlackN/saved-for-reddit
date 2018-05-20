@@ -3,13 +3,17 @@ module SfR.Templates.Html where
 
 import Clay (render)
 import Control.Monad (forM_)
+import Data.Char as C
+import Data.List as L
+import Data.Set as S hiding (filter)
+import Data.String (fromString)
 import Text.Blaze.Html5 as H
 import Text.Blaze.Html5.Attributes as A
 import Text.Blaze.Html5.Attributes.Extra as AE
 
 import SfR.Storage
 import SfR.Templates.Css (css)
-import SfR.Templates.Helpers (show_saved_item)
+import SfR.Templates.Helpers (show_saved_item, subreddit_filter_option)
 
 layout :: Html -> Html
 layout content = do
@@ -42,11 +46,36 @@ landing_html = layout $ do
           h1 "Saved for Reddit"
           a "Login" ! href "/auth/login" ! class_ "btn btn-outline-primary mt-3" ! role "button"
 
-view_html :: [SavedItem] -> Html
-view_html saved_items = layout $ do
+view_html :: [SavedItem] -> String -> Html
+view_html saved_items subreddit = layout $ do
+  let filtered_items = case subreddit of
+                         "all"     -> saved_items
+                         otherwise -> filter process saved_items
+                     where process item =
+                             subreddit == savedItemSubreddit item
   main_menu
   H.div ! class_ "mt-2 container mb-5" $ do
+    H.div ! class_ "row mt-3" $ do
+      H.div ! class_ "col" $ do
+        H.div ! class_ "card" $ do
+          H.div ! class_ "card-body" $ do
+            H.div ! class_ "d-flex w-100 justify-content-between align-items-center" $ do
+              H.form ! class_ "form-inline" ! action "/view" ! method "get" $ do
+                H.label "Subreddit" ! class_ "mr-3" ! for "subreddit"
+                select ! class_ "custom-select" ! name "subreddit" ! A.id "subreddit" $ do
+                  let subreddits = (L.sortOn (L.map C.toLower) .
+                                    S.toList . S.fromList .
+                                    L.map (\item -> savedItemSubreddit item)
+                                   ) saved_items
+                  case subreddit == "all" of
+                    False -> option "ALL" ! value "all"
+                    True  -> option "ALL" ! value "all" ! selected "selected"
+                  forM_ subreddits (subreddit_filter_option subreddit)
+                input ! class_ "btn btn-outline-primary ml-3" ! type_ "submit" ! value "Filter"
+              small ! class_ "text-muted" $ do
+                (string . show . length) filtered_items
+                "saved items"
     H.div ! class_ "row" $ do
       H.div ! class_ "col" $ do
         ul ! class_ "list-group mt-3" $ do
-          forM_ saved_items show_saved_item
+          forM_ filtered_items show_saved_item

@@ -14,6 +14,13 @@ format_datetime :: Int64 -> String
 format_datetime = formatTime defaultTimeLocale "%d.%m.%Y %X" .
                   posixSecondsToUTCTime . fromIntegral
 
+subreddit_filter_option :: String -> String -> Html
+subreddit_filter_option picked subreddit  = do
+  case subreddit == picked of
+    False -> option ! (value . fromString) subreddit $ string subreddit
+    True  -> option ! (value . fromString) subreddit ! selected "selected" $ do
+      string subreddit
+
 show_saved_item :: SavedItem -> Html
 show_saved_item item = do
   let parent_author = savedItemParentAuthor item

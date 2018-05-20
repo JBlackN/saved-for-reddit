@@ -67,4 +67,5 @@ view = do
         Just (Entity userId user) -> do
           let username = userUsername user
           saved_items <- liftIO $ get_user_saved username
-          html . TL.pack . renderHtml $ view_html saved_items
+          subreddit <- (param "subreddit" :: ActionM String) `rescue` (\_ -> return "all")
+          html . TL.pack . renderHtml $ view_html saved_items subreddit
