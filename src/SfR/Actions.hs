@@ -69,3 +69,18 @@ view = do
           saved_items <- liftIO $ get_user_saved username
           subreddit <- (param "subreddit" :: ActionM String) `rescue` (\_ -> return "all")
           html . TL.pack . renderHtml $ view_html saved_items subreddit
+
+export :: ActionM ()
+export = do
+  session <- getCookie "sfr_session"
+  case session of
+    Nothing  -> redirect "/"
+    Just key -> do
+      maybeUser <- liftIO $ get_user_from_session (T.unpack key)
+      case maybeUser of
+        Nothing                   -> redirect "/"
+        Just (Entity userId user) -> do
+          let username = userUsername user
+          saved_items <- liftIO $ get_user_saved username
+          setHeader "Content-Disposition" "attachment; filename=\"export.json\""
+          json saved_items

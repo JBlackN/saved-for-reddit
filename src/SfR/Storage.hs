@@ -1,3 +1,4 @@
+{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE EmptyDataDecls #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE GADTs #-}
@@ -11,6 +12,7 @@ module SfR.Storage where
 
 import Control.Monad (forM_, liftM)
 import Control.Monad.IO.Class (liftIO)
+import Data.Aeson
 import Data.ByteString as BS hiding (map)
 import Data.ByteString.Base64 as B64
 import Data.Int (Int64)
@@ -20,6 +22,7 @@ import Data.UUID.V4 (nextRandom)
 import Database.Persist
 import Database.Persist.Sqlite
 import Database.Persist.TH
+import GHC.Generics
 
 import SfR.Config (db_file, sfr_config)
 import SfR.Reddit.Types.Comment as TC
@@ -46,8 +49,10 @@ SavedItem
   createdUtc Int64
   userId UserId
   UniqueSavedItem userId identifier
-  deriving Show
+  deriving Show Generic
 |]
+
+instance ToJSON SavedItem
 
 get_or_create_user :: String -> IO (Int64, User)
 get_or_create_user username = do

@@ -36,6 +36,13 @@ main_menu :: Html
 main_menu = do
   nav ! class_ "navbar navbar-expand-lg navbar-light bg-light" $ do
     h1 "Saved for Reddit" ! class_ "navbar-brand mb-0 h1"
+    button ! class_ "navbar-toggler" ! type_ "button" ! AE.data_ "toggler" "collapse" ! AE.data_ "target" "#main-menu-items" $ do
+      H.span "" ! class_ "navbar-toggler-icon"
+    H.div ! class_ "collapse navbar-collapse" ! A.id "main-menu-items" $ do
+      ul ! class_ "navbar-nav mr-auto" $ ""
+      ul ! class_ "navbar-nav" $ do
+        li ! class_ "nav-item" $ do
+          a "Export to JSON" ! class_ "nav-link" ! href "/export"
 
 landing_html :: Html
 landing_html = layout $ do
