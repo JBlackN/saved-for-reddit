@@ -18,7 +18,7 @@ import SfR.Reddit.Types
 import SfR.Storage (get_or_create_user, get_user_from_session,
                     get_user_saved, normalize_saved, update_saved,
                     userUsername, userSessionKey)
-import SfR.Templates.Html (landing_html)
+import SfR.Templates.Html (landing_html, view_html)
 
 landing :: ActionM ()
 landing = html . TL.pack . renderHtml $ landing_html
@@ -67,4 +67,4 @@ view = do
         Just (Entity userId user) -> do
           let username = userUsername user
           saved_items <- liftIO $ get_user_saved username
-          html $ TL.pack $ show saved_items
+          html . TL.pack . renderHtml $ view_html saved_items
