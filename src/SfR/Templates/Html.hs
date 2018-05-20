@@ -43,6 +43,8 @@ main_menu = do
       ul ! class_ "navbar-nav" $ do
         li ! class_ "nav-item" $ do
           a "Export to JSON" ! class_ "nav-link" ! href "/export"
+        li ! class_ "nav-item" $ do
+          a "Logout" ! class_ "nav-link" ! href "/logout"
 
 landing_html :: Html
 landing_html = layout $ do

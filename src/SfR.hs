@@ -2,7 +2,7 @@
 module SfR where
 
 import Web.Scotty
-import SfR.Actions (landing, login, callback, view, export)
+import SfR.Actions (landing, login, callback, view, export, logout)
 
 saved_for_reddit :: ScottyM ()
 saved_for_reddit = do
@@ -11,3 +11,4 @@ saved_for_reddit = do
   get "/auth/reddit_oauth2/callback" $ callback
   get "/view" $ view
   get "/export" $ export
+  get "/logout" $ logout

@@ -84,3 +84,10 @@ export = do
           saved_items <- liftIO $ get_user_saved username
           setHeader "Content-Disposition" "attachment; filename=\"export.json\""
           json saved_items
+
+logout :: ActionM ()
+logout = do
+  setHeader "Set-Cookie" (TL.pack ("sfr_session=null; HttpOnly; Path=/; " ++
+                                   "MaxAge=0; " ++
+                                   "Expires=Thu, 01 Jan 1970 00:00:00 GMT"))
+  redirect "/"
