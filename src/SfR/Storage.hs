@@ -43,7 +43,7 @@ SavedItem
   title String
   link String
   permalink String
-  body String Maybe
+  body Text Maybe
   subreddit String
   score Int
   createdUtc Int64

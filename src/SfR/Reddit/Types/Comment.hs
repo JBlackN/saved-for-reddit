@@ -3,6 +3,7 @@ module SfR.Reddit.Types.Comment where
 
 import Data.Aeson
 import Data.Int (Int64)
+import Data.Text hiding (take)
 import GHC.Generics
 
 data CommentListing = CommentListing { data' :: CommentListingData
@@ -19,7 +20,7 @@ data SavedComment = SavedComment { kind'' :: String
 data SavedCommentData = SavedCommentData { name :: String
                                          , author :: String
                                          , subreddit :: String
-                                         , body_html :: String
+                                         , body_html :: Text
                                          , score :: Int
                                          , permalink :: String
                                          , created_utc :: Int64

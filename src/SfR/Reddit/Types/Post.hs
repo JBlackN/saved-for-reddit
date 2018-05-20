@@ -3,6 +3,7 @@ module SfR.Reddit.Types.Post where
 
 import Data.Aeson
 import Data.Int (Int64)
+import Data.Text hiding (take)
 import GHC.Generics
 
 data PostListing = PostListing { data' :: PostListingData
@@ -19,7 +20,7 @@ data SavedPost = SavedPost { kind'' :: String
 data SavedPostData = SavedPostData { name :: String
                                    , author :: String
                                    , subreddit :: String
-                                   , selftext_html :: Maybe String
+                                   , selftext_html :: Maybe Text
                                    , score :: Int
                                    , thumbnail :: String
                                    , title :: String
