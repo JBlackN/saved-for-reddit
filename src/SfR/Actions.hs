@@ -4,7 +4,9 @@ module SfR.Actions where
 import Control.Monad (liftM)
 import Control.Monad.IO.Class
 import Data.ByteString.Char8 as BSC
+import qualified Data.Text as T
 import qualified Data.Text.Lazy as TL
+import Database.Persist
 import Text.Blaze.Html.Renderer.Pretty (renderHtml)
 import Web.Scotty
 import Web.Scotty.Cookie
@@ -13,8 +15,9 @@ import SfR.Config (callback_url, client_id, secure_cookie, sfr_config)
 import SfR.Reddit (identity, savedPosts, savedComments)
 import SfR.Reddit.Auth (get_access_token)
 import SfR.Reddit.Types
-import SfR.Storage (get_or_create_user, normalize_saved, update_saved,
-                    userSessionKey)
+import SfR.Storage (get_or_create_user, get_user_from_session,
+                    get_user_saved, normalize_saved, update_saved,
+                    userUsername, userSessionKey)
 import SfR.Templates.Html (landing_html)
 
 landing :: ActionM ()
@@ -54,8 +57,14 @@ callback = do
 
 view :: ActionM ()
 view = do
-  cookie <- getCookie "sfr_session"
-  case cookie of
-    Nothing    -> redirect "/"
-    Just value -> do
-      html $ TL.fromStrict $ value
+  session <- getCookie "sfr_session"
+  case session of
+    Nothing  -> redirect "/"
+    Just key -> do
+      maybeUser <- liftIO $ get_user_from_session (T.unpack key)
+      case maybeUser of
+        Nothing                   -> redirect "/"
+        Just (Entity userId user) -> do
+          let username = userUsername user
+          saved_items <- liftIO $ get_user_saved username
+          html $ TL.pack $ show saved_items

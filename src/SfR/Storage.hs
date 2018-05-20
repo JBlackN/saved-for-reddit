@@ -30,6 +30,7 @@ User
   username String
   sessionKey String
   UniqueUser username
+  UniqueSessionKey sessionKey
   deriving Show
 SavedItem
   identifier String
@@ -64,6 +65,25 @@ get_or_create_user username = do
         update userId [UserSessionKey =. sessionKey]
         Just user <- get userId
         return $ (fromSqlKey userId, user)
+
+get_user_from_session :: String -> IO (Maybe (Entity User))
+get_user_from_session session_key = do
+  db_file <- liftM db_file sfr_config
+  runSqlite (T.pack db_file) $ do
+    runMigration migrateAll
+    getBy $ UniqueSessionKey session_key
+
+get_user_saved :: String -> IO [SavedItem]
+get_user_saved username = do
+  db_file <- liftM db_file sfr_config
+  runSqlite (T.pack db_file) $ do
+    runMigration migrateAll
+    maybeUser <- getBy $ UniqueUser username
+    case maybeUser of
+      Nothing                   -> return []
+      Just (Entity userId user) -> do
+        entities <- selectList [SavedItemUserId ==. userId] [Desc SavedItemCreatedUtc]
+        return $ map (\(Entity savedItemId savedItem) -> savedItem) entities
 
 normalize_saved :: Int64 -> [SavedPostData] -> [SavedCommentData] -> [SavedItem]
 normalize_saved userId posts comments =
