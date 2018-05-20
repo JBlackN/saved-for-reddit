@@ -30,7 +30,7 @@ show_saved_item item = do
 
 show_saved_post :: SavedItem -> Html
 show_saved_post post = do
-  li ! class_ "list-group-item list-group-item-action flex-column align-items-start" $ do
+  li ! class_ "list-group-item flex-column align-items-start" $ do
     H.div ! class_ "media" $ do
       let maybeThumbnail = savedItemThumbnail post
       case maybeThumbnail of
@@ -69,7 +69,7 @@ show_saved_post post = do
 
 show_saved_comment :: SavedItem -> Html
 show_saved_comment comment = do
-  li ! class_ "list-group-item list-group-item-action flex-column align-items-start" $ do
+  li ! class_ "list-group-item flex-column align-items-start" $ do
     H.div ! class_ "d-flex w-100 justify-content-between" $ do
       h2 ! class_ "mb-1 saved-item-title" $ do
         let link = savedItemLink comment
