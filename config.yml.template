@@ -1,6 +1,6 @@
-callback_url:
-client_id:
-client_secret:
+callback_url: ""
+client_id: ""
+client_secret: ""
 db_file: ./saved-for-reddit.db
 port: 8000
 secure_cookie: true

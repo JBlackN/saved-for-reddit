@@ -28,6 +28,7 @@ dependencies:
 - bytestring
 - clay
 - containers
+- directory
 - http-conduit
 - persistent
 - persistent-sqlite
