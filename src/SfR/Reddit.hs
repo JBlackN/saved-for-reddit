@@ -1,9 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
-module SfR.Reddit
-  ( identity
-  , savedPosts
-  , savedComments
-  ) where
+module SfR.Reddit where
 
 import Control.Monad
 import Data.ByteString as BS hiding (map)

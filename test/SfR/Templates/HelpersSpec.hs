@@ -59,6 +59,14 @@ spec = do
         let option = subredditFilterOption "AskReddit" "AskPhotography"
         renderHtml option `shouldBe` "<option value=\"AskPhotography\">" ++
                                      "AskPhotography</option>"
+  describe "itemMetadata" $
+    it "generates HTML of item's metadata" $
+      renderHtml (itemMetadata "JBlackN" "AskReddit")
+        `shouldBe` "by<a class=\"d-inline-block\" " ++
+                   "href=\"https://reddit.com/u/JBlackN\" target=\"_blank\">" ++
+                   "JBlackN</a>in<a class=\"d-inline-block\" " ++
+                   "href=\"https://reddit.com/r/AskReddit\" " ++
+                   "target=\"_blank\">r/AskReddit</a>"
   describe "showSavedItem" $ do
     context "when item is a post" $
       it "renders it as HTML list item" $ do
