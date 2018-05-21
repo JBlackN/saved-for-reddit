@@ -1,3 +1,15 @@
+{-|
+Module     : SfR.Actions
+Description: Web application's actions
+Copyright  : (c) Petr Schmied, 2018
+License    : MIT
+Maintainer : peter9209@gmail.com
+Stability  : stable
+Portability: portable
+
+Module defines [Scotty](https://github.com/scotty-web/scotty) web application's
+actions for corresponding routes (see "SfR").
+-}
 {-# LANGUAGE OverloadedStrings #-}
 module SfR.Actions where
 
@@ -19,9 +31,16 @@ import SfR.Storage (getOrCreateUser, getUserFromSession,
                     userUsername, userSessionKey)
 import SfR.Templates.Html (landingHtml, viewHtml)
 
+-- | Landing page action.
+--
+-- See 'SfR.Templates.Html.landingHtml'.
 landing :: ActionM ()
 landing = html . TL.pack . renderHtml $ landingHtml
 
+-- | Login action.
+--
+-- Loads @client_id@ and @callback_url@ from the config file (see "SfR.Config")
+-- and redirects to [Reddit](https://www.reddit.com) OAuth authorization page.
 login :: ActionM ()
 login = do
   client_id <- liftIO $ client_id <$> sfrConfig
@@ -34,6 +53,22 @@ login = do
       "&duration=temporary&scope=identity,history"
     )
 
+-- | OAuth2 callback action.
+--
+-- (1) Receives authorization code from [Reddit](https://www.reddit.com) and
+--     uses it to obtain user's access token (see
+--     'SfR.Reddit.Auth.getAccessToken').
+-- (2) Gets user's identity (username) and her/his saved posts and comments
+--     (see 'SfR.Reddit.identity', 'SfR.Reddit.savedPosts',
+--     'SfR.Reddit.savedComments').
+-- (3) Registers the user within the app if needed and updates his saved items
+--     in the database (see 'SfR.Storage.getOrCreateUser',
+--     'SfR.Storage.normalizeSaved', 'SfR.Storage.updateSaved').
+-- (4) Logs the user in and redirects to browsing view (see 'view').
+--
+-- @Note:@ [Reddit](https://www.reddit.com) posts and comments are obtained
+-- separately due to differences in their data representations. Application
+-- stores them in normalized form (see 'SfR.Storage.normalizeSaved').
 callback :: ActionM ()
 callback = do
   code <- param "code"
@@ -54,6 +89,13 @@ callback = do
                                    if secure_cookie then "; Secure" else ""))
   redirect "/view"
 
+-- | Browsing view action.
+--
+-- (1) Attempts to get user from session (see 'SfR.Storage.getUserFromSession').
+--     Redirects to 'login' if unsuccesful.
+-- (2) Gets user's saved items (see 'SfR.Storage.getUserSaved') and current
+--     subreddit filter's value (default: @all@).
+-- (3) Renders the view (see 'SfR.Templates.Html.viewHtml').
 view :: ActionM ()
 view = do
   session <- getCookie "sfr_session"
@@ -70,6 +112,12 @@ view = do
             (param "subreddit" :: ActionM String) `rescue` (\_ -> return "all")
           html . TL.pack . renderHtml $ viewHtml saved_items subreddit
 
+-- | JSON export view.
+--
+-- (1) Attempts to get user from session (see 'SfR.Storage.getUserFromSession').
+--     Redirects to 'login' if unsuccesful.
+-- (2) Gets user's saved items (see 'SfR.Storage.getUserSaved').
+-- (3) Renders JSON file and sends it for download.
 export :: ActionM ()
 export = do
   session <- getCookie "sfr_session"
@@ -85,6 +133,9 @@ export = do
           setHeader "Content-Disposition" "attachment; filename=\"export.json\""
           json saved_items
 
+-- | Logout action.
+--
+-- Clears user's session and redirects to 'login'.
 logout :: ActionM ()
 logout = do
   setHeader "Set-Cookie" (TL.pack ("sfr_session=null; HttpOnly; Path=/; " ++

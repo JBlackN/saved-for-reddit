@@ -1,3 +1,48 @@
+{-|
+Module     : SfR.Storage
+Description: Web application's storage
+Copyright  : (c) Petr Schmied, 2018
+License    : MIT
+Maintainer : peter9209@gmail.com
+Stability  : stable
+Portability: portable
+
+Module defines data types and methods for web application's storage management.
+
+'migrateAll' generates database migration for both entities below.
+
+= Data types of database entities
+
+['User']: Application user.
+
+    ['UserId']: User's ID.
+    ['userUsername']: User's username.
+    ['userSessionKey']: User's session key (see 'getOrCreateUser').
+    ['UniqueUser']: Unique constraint on user's username.
+    ['UniqueSessionKey']: Unique constraint on users' session keys.
+
+['SavedItem']: Saved item ( [Reddit](https://www.reddit.com) post or comment)
+               stored by application.
+
+    ['SavedItemId']: Saved item's ID.
+    ['savedItemIdentifier']: Saved item's [Reddit](https://www.reddit.com)
+                             identifier.
+    ['savedItemAuthor']: Saved item's author.
+    ['savedItemParentAuthor']: Saved comment's parent post author.
+    ['savedItemThumbnail']: Saved post's thumbnail URL.
+    ['savedItemTitle']: Saved post's or comment's parent post's title.
+    ['savedItemLink']: Saved item's link.
+    ['savedItemPermalink']: Saved item's permalink.
+    ['savedItemBody']: Saved item's body as raw HTML.
+    ['savedItemSubreddit']: Saved item's subreddit.
+    ['savedItemScore']: Saved item's score (upvotes &#x2212; downvotes).
+    ['savedItemCreatedUtc']: Saved item's created date and time as UNIX
+                             timestamp.
+    ['savedItemUserId']: 'UserId' of 'User' to whom the saved item belongs.
+    ['UniqueSavedItem']: Unique constraint on saved item's 'UserId' and
+                         'savedItemIdentifier', i. e. no duplicate saved
+                         items stored for the same user.
+-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE EmptyDataDecls #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -52,9 +97,18 @@ SavedItem
   deriving Show Generic Eq
 |]
 
+-- | Export 'SavedItem' to JSON.
 instance ToJSON SavedItem
 
-getOrCreateUser :: String -> IO (Int64, User)
+-- | Gets or creates application's user.
+--
+-- Runs 'migrateAll' database migration.
+--
+-- (1) Generates new session key (UUID) for user.
+-- (2) Creates and returns user if (s)he doesn't exist. Updates (session key)
+--     and returns user otherwise. Also returns user ID.
+getOrCreateUser :: String -- ^ [Reddit](https://www.reddit.com) username.
+                -> IO (Int64, User) -- ^ User ID and 'User' record.
 getOrCreateUser username = do
   db_file <- db_file <$> sfrConfig
   runSqlite (T.pack db_file) $ do
@@ -71,14 +125,29 @@ getOrCreateUser username = do
         Just user <- get userId
         return (fromSqlKey userId, user)
 
-getUserFromSession :: String -> IO (Maybe (Entity User))
+-- | Gets user from the application's session.
+--
+-- Runs 'migrateAll' database migration.
+--
+-- Uses session key (UUID) to lookup corresponding 'User'.
+getUserFromSession :: String -- ^ Session key (UUID).
+                   -> IO (Maybe (Entity User)) -- ^ User if exists.
 getUserFromSession session_key = do
   db_file <- db_file <$> sfrConfig
   runSqlite (T.pack db_file) $ do
     runMigration migrateAll
     getBy $ UniqueSessionKey session_key
 
-getUserSaved :: String -> IO [SavedItem]
+-- | Gets user's saved items.
+--
+-- Runs 'migrateAll' database migration.
+--
+-- (1) Gets user by username.
+-- (2) If user doesn't exist, returns empty list.
+-- (3) Otherwise returns her/his saved items sorted by created date and time
+--     (descending).
+getUserSaved :: String -- ^ Application user's username.
+             -> IO [SavedItem] -- ^ User's saved items.
 getUserSaved username = do
   db_file <- db_file <$> sfrConfig
   runSqlite (T.pack db_file) $ do
@@ -90,7 +159,13 @@ getUserSaved username = do
         map (\(Entity savedItemId savedItem) -> savedItem) <$>
           selectList [SavedItemUserId ==. userId] [Desc SavedItemCreatedUtc]
 
-normalizeSaved :: Int64 -> [SavedPostData] -> [SavedCommentData] -> [SavedItem]
+-- | Normalizes saved posts and comments.
+--
+-- Also assigns them to application's user by her/his user ID.
+normalizeSaved :: Int64 -- ^ Application user's ID.
+               -> [SavedPostData] -- ^ User's saved posts.
+               -> [SavedCommentData] -- ^ User's saved comments.
+               -> [SavedItem] -- ^ Normalized user's saved items.
 normalizeSaved userId posts comments =
   map normalize_post posts ++ map normalize_comment comments
   where normalize_post post =
@@ -130,7 +205,13 @@ normalizeSaved userId posts comments =
                     }
         normalize_link = (++) "https://www.reddit.com"
 
-updateSaved :: [SavedItem] -> IO ()
+-- | Updates saved items in application's database.
+--
+-- Runs 'migrateAll' database migration.
+--
+-- Inserts only unique items, see 'UniqueSavedItem'.
+updateSaved :: [SavedItem] -- ^ Saved items.
+            -> IO ()
 updateSaved saved_items = do
   db_file <- db_file <$> sfrConfig
   runSqlite (T.pack db_file) $ do

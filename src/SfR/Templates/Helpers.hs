@@ -1,3 +1,15 @@
+{-|
+Module     : SfR.Templates.Helpers
+Description: Web application's HTML template helpers
+Copyright  : (c) Petr Schmied, 2018
+License    : MIT
+Maintainer : peter9209@gmail.com
+Stability  : stable
+Portability: portable
+
+Module defines helper methods for web application's HTML templates (see
+"SfR.Templates.Html").
+-}
 {-# LANGUAGE OverloadedStrings #-}
 
 module SfR.Templates.Helpers where
@@ -11,19 +23,29 @@ import Text.Blaze.Html5.Attributes as A
 
 import SfR.Storage
 
-formatDatetime :: Int64 -> String
+-- | Converts UNIX timestamp to formatted date and time.
+formatDatetime :: Int64 -- ^ UNIX timestamp.
+               -> String -- ^ Date and time (format: @%d.%m.%Y %H:%M:%S@).
 formatDatetime =
   formatTime defaultTimeLocale "%d.%m.%Y %X" .
   posixSecondsToUTCTime . fromIntegral
 
-subredditFilterOption :: String -> String -> Html
+-- | Generates HTML option for subreddit filter.
+--
+-- Marks currently selected filter item as such.
+subredditFilterOption :: String -- ^ Currently applied filter (subreddit).
+                      -> String -- ^ Subreddit to generate HTML option for.
+                      -> Html
 subredditFilterOption picked subreddit =
   if subreddit == picked then
     option ! (value . fromString) subreddit ! selected "selected" $
       string subreddit
     else option ! (value . fromString) subreddit $ string subreddit
 
-itemMetadata :: String -> String -> Html
+-- | Generates HTML of saved item metadata (author and subreddit).
+itemMetadata :: String -- ^ Item's author.
+             -> String -- ^ Item's subreddit.
+             -> Html
 itemMetadata author subreddit = do
   "by"
   a ! class_ "d-inline-block" !
@@ -36,6 +58,11 @@ itemMetadata author subreddit = do
     target "_blank" $
     string ("r/" ++ subreddit)
 
+-- | Generates HTML list item for saved item.
+--
+-- Uses item's parent author to determine item's type (posts have no parent).
+--
+-- @See also:@ 'showSavedPost' and 'showSavedItem'.
 showSavedItem :: SavedItem -> Html
 showSavedItem item = do
   let parent_author = savedItemParentAuthor item
@@ -43,6 +70,9 @@ showSavedItem item = do
     Nothing -> showSavedPost item
     _       -> showSavedComment item
 
+-- | Generates HTML list item for saved post.
+--
+-- @See also:@ 'showSavedItem', 'formatDatetime' and 'itemMetadata'.
 showSavedPost :: SavedItem -> Html
 showSavedPost post =
   li ! class_ "list-group-item flex-column align-items-start" $
@@ -76,6 +106,9 @@ showSavedPost post =
           Just body ->
             p $ preEscapedToHtml body
 
+-- | Generates HTML list item for saved comment.
+--
+-- @See also:@ 'showSavedItem', 'formatDatetime' and 'itemMetadata'.
 showSavedComment :: SavedItem -> Html
 showSavedComment comment =
   li ! class_ "list-group-item flex-column align-items-start" $ do

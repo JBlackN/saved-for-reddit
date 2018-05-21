@@ -1,3 +1,16 @@
+{-|
+Module     : SfR.Templates.Html
+Description: Web application's HTML templates
+Copyright  : (c) Petr Schmied, 2018
+License    : MIT
+Maintainer : peter9209@gmail.com
+Stability  : stable
+Portability: portable
+
+Module defines web application's HTML templates.
+
+@See also:@ "SfR.Templates.Helpers", "SfR.Templates.Css".
+-}
 {-# LANGUAGE OverloadedStrings #-}
 
 module SfR.Templates.Html where
@@ -16,6 +29,12 @@ import SfR.Storage
 import SfR.Templates.Css (css)
 import SfR.Templates.Helpers (showSavedItem, subredditFilterOption)
 
+-- | Web application's layout.
+--
+-- Application uses [Bootstrap](https://getbootstrap.com/)
+-- and [Font Awesome](https://fontawesome.com/).
+--
+-- See "SfR.Templates.Css" for additional CSS stylesheets.
 layout :: Html -> Html
 layout content = do
   docType
@@ -56,6 +75,7 @@ layout content = do
           "sha384-uefMccjFJAIv6A+rW+L4AHf99KvxDjWSu1z9VI8SKNVmz4sk7buKt/6v9KI65qnm" !
         crossorigin "anonymous"
 
+-- | Web application's main menu.
 mainMenu :: Html
 mainMenu =
   nav ! class_ "navbar navbar-expand-lg navbar-light bg-light" $ do
@@ -72,6 +92,9 @@ mainMenu =
         li ! class_ "nav-item" $
           a "Logout" ! class_ "nav-link" ! href "/logout"
 
+-- | Web application's landing page.
+--
+-- @See also:@ 'SfR.Actions.landing'.
 landingHtml :: Html
 landingHtml =
   layout $
@@ -84,7 +107,16 @@ landingHtml =
               class_ "btn btn-outline-primary mt-3" !
               role "button"
 
-viewHtml :: [SavedItem] -> String -> Html
+-- | Web application's browsing view page.
+--
+-- Displays saved items optionally filtered by subreddit.
+--
+-- @See also:@ 'SfR.Actions.view',
+--             'SfR.Templates.Helpers.subredditFilterOption',
+--             'SfR.Templates.Helpers.showSavedItem'.
+viewHtml :: [SavedItem] -- ^ Saved items to display.
+         -> String -- ^ Subreddit to filter saved items by.
+         -> Html
 viewHtml saved_items subreddit =
   layout $ do
     let filtered_items =
