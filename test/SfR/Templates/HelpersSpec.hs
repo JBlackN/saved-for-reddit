@@ -8,8 +8,8 @@ import Text.Blaze.Html.Renderer.String (renderHtml)
 import SfR.Storage
 import SfR.Templates.Helpers
 
-saved_post_item :: SavedItem
-saved_post_item =
+savedPostItem :: SavedItem
+savedPostItem =
   SavedItem { savedItemIdentifier = "t3_xxxxxx"
             , savedItemAuthor = "JBlackN"
             , savedItemParentAuthor = Nothing
@@ -24,8 +24,8 @@ saved_post_item =
             , savedItemUserId = toSqlKey 1
             }
 
-saved_comment_item :: SavedItem
-saved_comment_item =
+savedCommentItem :: SavedItem
+savedCommentItem =
   SavedItem { savedItemIdentifier = "t1_xxxxxx"
             , savedItemAuthor = "JBlackN"
             , savedItemParentAuthor = Just "JBlackN"
@@ -45,24 +45,24 @@ main = hspec spec
 
 spec :: Spec
 spec = do
-  describe "format_datetime" $ do
-    it "converts UNIX timestamp to formatted date and time" $ do
-      format_datetime 1526850351 `shouldBe` "20.05.2018 21:05:51"
-  describe "subreddit_filter_option" $ do
-    context "when option matches selected subreddit" $ do
+  describe "formatDatetime" $
+    it "converts UNIX timestamp to formatted date and time" $
+      formatDatetime 1526850351 `shouldBe` "20.05.2018 21:05:51"
+  describe "subredditFilterOption" $ do
+    context "when option matches selected subreddit" $
       it "generates HTML select filter option" $ do
-        let option = subreddit_filter_option "AskReddit" "AskReddit"
+        let option = subredditFilterOption "AskReddit" "AskReddit"
         renderHtml option `shouldBe` "<option value=\"AskReddit\" " ++
                                      "selected=\"selected\">AskReddit</option>"
-    context "otherwise" $ do
+    context "otherwise" $
       it "generates HTML select filter option" $ do
-        let option = subreddit_filter_option "AskReddit" "AskPhotography"
+        let option = subredditFilterOption "AskReddit" "AskPhotography"
         renderHtml option `shouldBe` "<option value=\"AskPhotography\">" ++
                                      "AskPhotography</option>"
-  describe "show_saved_item" $ do
-    context "when item is a post" $ do
+  describe "showSavedItem" $ do
+    context "when item is a post" $
       it "renders it as HTML list item" $ do
-        let item = show_saved_item saved_post_item
+        let item = showSavedItem savedPostItem
         renderHtml item `shouldBe` "<li class=\"list-group-item flex-column " ++
                                    "align-items-start\"><div class=\"media\">" ++
                                    "<img class=\"mr-3\" " ++
@@ -84,9 +84,9 @@ spec = do
                                    "reddit.com/r/AskReddit\" target=\"_blank\">" ++
                                    "r/AskReddit</a></small><p>Lorem ipsum " ++
                                    "dolor sit amet.</p></div></div></li>"
-    context "when item is a comment" $ do
+    context "when item is a comment" $
       it "renders it as HTML list item" $ do
-        let item = show_saved_item saved_comment_item
+        let item = showSavedItem savedCommentItem
         renderHtml item `shouldBe` "<li class=\"list-group-item flex-column " ++
                                    "align-items-start\"><div class=\"d-flex " ++
                                    "w-100 justify-content-between\"><h2 " ++

@@ -15,5 +15,5 @@ data SfRConfig = SfRConfig { callback_url :: String
                            } deriving (Generic, Show)
 instance FromJSON SfRConfig
 
-sfr_config :: IO SfRConfig
-sfr_config = either (error . show) id <$> decodeFileEither "config.yml"
+sfrConfig :: IO SfRConfig
+sfrConfig = either (error . show) id <$> decodeFileEither "config.yml"

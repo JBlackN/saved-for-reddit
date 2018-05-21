@@ -1,7 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 module SfR.Actions where
 
-import Control.Monad (liftM)
 import Control.Monad.IO.Class
 import Data.ByteString.Char8 as BSC
 import qualified Data.Text as T
@@ -11,22 +10,22 @@ import Text.Blaze.Html.Renderer.Pretty (renderHtml)
 import Web.Scotty
 import Web.Scotty.Cookie
 
-import SfR.Config (callback_url, client_id, secure_cookie, sfr_config)
+import SfR.Config (callback_url, client_id, secure_cookie, sfrConfig)
 import SfR.Reddit (identity, savedPosts, savedComments)
-import SfR.Reddit.Auth (get_access_token)
+import SfR.Reddit.Auth (getAccessToken)
 import SfR.Reddit.Types
-import SfR.Storage (get_or_create_user, get_user_from_session,
-                    get_user_saved, normalize_saved, update_saved,
+import SfR.Storage (getOrCreateUser, getUserFromSession,
+                    getUserSaved, normalizeSaved, updateSaved,
                     userUsername, userSessionKey)
-import SfR.Templates.Html (landing_html, view_html)
+import SfR.Templates.Html (landingHtml, viewHtml)
 
 landing :: ActionM ()
-landing = html . TL.pack . renderHtml $ landing_html
+landing = html . TL.pack . renderHtml $ landingHtml
 
 login :: ActionM ()
 login = do
-  client_id <- liftIO $ liftM client_id sfr_config
-  callback_url <- liftIO $ liftM callback_url sfr_config
+  client_id <- liftIO $ client_id <$> sfrConfig
+  callback_url <- liftIO $ callback_url <$> sfrConfig
   redirect $ TL.pack (
       "https://www.reddit.com/api/v1/authorize?client_id=" ++
       client_id ++
@@ -38,19 +37,19 @@ login = do
 callback :: ActionM ()
 callback = do
   code <- param "code"
-  token <- liftIO $ liftM access_token (get_access_token code)
+  token <- liftIO $ access_token <$> getAccessToken code
 
-  username <- liftIO $ liftM name (identity token)
+  username <- liftIO $ name <$> identity token
   savedPosts <- liftIO $ savedPosts token username ""
   savedComments <- liftIO $ savedComments token username ""
 
-  (userId, user) <- liftIO $ get_or_create_user username
-  let savedItems = normalize_saved userId savedPosts savedComments
-  liftIO $ update_saved savedItems
+  (userId, user) <- liftIO $ getOrCreateUser username
+  let savedItems = normalizeSaved userId savedPosts savedComments
+  liftIO $ updateSaved savedItems
 
-  secure_cookie <- liftIO $ liftM secure_cookie sfr_config
+  secure_cookie <- liftIO $ secure_cookie <$> sfrConfig
   setHeader "Set-Cookie" (TL.pack ("sfr_session=" ++
-                                   (userSessionKey user) ++
+                                   userSessionKey user ++
                                    "; HttpOnly; Path=/; MaxAge=3600" ++
                                    if secure_cookie then "; Secure" else ""))
   redirect "/view"
@@ -61,14 +60,15 @@ view = do
   case session of
     Nothing  -> redirect "/"
     Just key -> do
-      maybeUser <- liftIO $ get_user_from_session (T.unpack key)
+      maybeUser <- liftIO $ getUserFromSession (T.unpack key)
       case maybeUser of
         Nothing                   -> redirect "/"
         Just (Entity userId user) -> do
           let username = userUsername user
-          saved_items <- liftIO $ get_user_saved username
-          subreddit <- (param "subreddit" :: ActionM String) `rescue` (\_ -> return "all")
-          html . TL.pack . renderHtml $ view_html saved_items subreddit
+          saved_items <- liftIO $ getUserSaved username
+          subreddit <-
+            (param "subreddit" :: ActionM String) `rescue` (\_ -> return "all")
+          html . TL.pack . renderHtml $ viewHtml saved_items subreddit
 
 export :: ActionM ()
 export = do
@@ -76,12 +76,12 @@ export = do
   case session of
     Nothing  -> redirect "/"
     Just key -> do
-      maybeUser <- liftIO $ get_user_from_session (T.unpack key)
+      maybeUser <- liftIO $ getUserFromSession (T.unpack key)
       case maybeUser of
         Nothing                   -> redirect "/"
         Just (Entity userId user) -> do
           let username = userUsername user
-          saved_items <- liftIO $ get_user_saved username
+          saved_items <- liftIO $ getUserSaved username
           setHeader "Content-Disposition" "attachment; filename=\"export.json\""
           json saved_items
 

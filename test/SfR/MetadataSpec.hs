@@ -11,10 +11,10 @@ main = hspec spec
 
 spec :: Spec
 spec = do
-  describe "version" $ do
-    it "gets application's correct version" $ do
-      version `shouldBe` (showVersion App.version)
-  describe "user_agent" $ do
+  describe "version" $
+    it "gets application's correct version" $
+      version `shouldBe` showVersion App.version
+  describe "userAgent" $
     it "generates correct User-Agent for the application" $ do
       let ua = "haskell:saved-for-reddit:v" ++ version ++ " (by /u/JBlackN)"
-      user_agent `shouldBe` ua
+      userAgent `shouldBe` ua

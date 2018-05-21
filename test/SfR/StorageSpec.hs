@@ -120,8 +120,8 @@ main :: IO ()
 main = hspec spec
 
 spec :: Spec
-spec = do
-  describe "normalize_saved" $ do
-    context "while assigning to user by her/his ID" $ do
-      it "merges saved posts and comments into single array of items" $ do
-        normalize_saved 1 test_posts test_comments `shouldBe` test_items
+spec =
+  describe "normalizeSaved" $
+    context "while assigning to user by her/his ID" $
+      it "merges saved posts and comments into single array of items" $
+        normalizeSaved 1 test_posts test_comments `shouldBe` test_items

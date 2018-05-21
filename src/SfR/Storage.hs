@@ -10,7 +10,7 @@
 {-# LANGUAGE TypeFamilies #-}
 module SfR.Storage where
 
-import Control.Monad (forM_, liftM)
+import Control.Monad (forM_)
 import Control.Monad.IO.Class (liftIO)
 import Data.Aeson
 import Data.ByteString as BS hiding (map)
@@ -24,7 +24,7 @@ import Database.Persist.Sqlite
 import Database.Persist.TH
 import GHC.Generics
 
-import SfR.Config (db_file, sfr_config)
+import SfR.Config (db_file, sfrConfig)
 import SfR.Reddit.Types.Comment as TC
 import SfR.Reddit.Types.Post as TP
 
@@ -54,45 +54,45 @@ SavedItem
 
 instance ToJSON SavedItem
 
-get_or_create_user :: String -> IO (Int64, User)
-get_or_create_user username = do
-  db_file <- liftM db_file sfr_config
+getOrCreateUser :: String -> IO (Int64, User)
+getOrCreateUser username = do
+  db_file <- db_file <$> sfrConfig
   runSqlite (T.pack db_file) $ do
     runMigration migrateAll
-    sessionKey <- liftIO $ liftM toString nextRandom
+    sessionKey <- liftIO $ toString <$> nextRandom
     maybeUser <- getBy $ UniqueUser username
     case maybeUser of
       Nothing -> do
         userId <- insert $ User username sessionKey
         Just user <- get userId
-        return $ (fromSqlKey userId, user)
+        return (fromSqlKey userId, user)
       Just (Entity userId user) -> do
         update userId [UserSessionKey =. sessionKey]
         Just user <- get userId
-        return $ (fromSqlKey userId, user)
+        return (fromSqlKey userId, user)
 
-get_user_from_session :: String -> IO (Maybe (Entity User))
-get_user_from_session session_key = do
-  db_file <- liftM db_file sfr_config
+getUserFromSession :: String -> IO (Maybe (Entity User))
+getUserFromSession session_key = do
+  db_file <- db_file <$> sfrConfig
   runSqlite (T.pack db_file) $ do
     runMigration migrateAll
     getBy $ UniqueSessionKey session_key
 
-get_user_saved :: String -> IO [SavedItem]
-get_user_saved username = do
-  db_file <- liftM db_file sfr_config
+getUserSaved :: String -> IO [SavedItem]
+getUserSaved username = do
+  db_file <- db_file <$> sfrConfig
   runSqlite (T.pack db_file) $ do
     runMigration migrateAll
     maybeUser <- getBy $ UniqueUser username
     case maybeUser of
       Nothing                   -> return []
-      Just (Entity userId user) -> do
-        entities <- selectList [SavedItemUserId ==. userId] [Desc SavedItemCreatedUtc]
-        return $ map (\(Entity savedItemId savedItem) -> savedItem) entities
+      Just (Entity userId user) ->
+        map (\(Entity savedItemId savedItem) -> savedItem) <$>
+          selectList [SavedItemUserId ==. userId] [Desc SavedItemCreatedUtc]
 
-normalize_saved :: Int64 -> [SavedPostData] -> [SavedCommentData] -> [SavedItem]
-normalize_saved userId posts comments =
-  (map normalize_post posts) ++ (map normalize_comment comments)
+normalizeSaved :: Int64 -> [SavedPostData] -> [SavedCommentData] -> [SavedItem]
+normalizeSaved userId posts comments =
+  map normalize_post posts ++ map normalize_comment comments
   where normalize_post post =
           SavedItem { savedItemIdentifier = TP.name post
                     , savedItemAuthor = TP.author post
@@ -104,10 +104,10 @@ normalize_saved userId posts comments =
                                                 "image"   -> Nothing
                                                 "nsfw"    -> Nothing
                                                 "spoiler" -> Nothing
-                                                otherwise -> Just thumbnail
+                                                _         -> Just thumbnail
                     , savedItemTitle = TP.title post
                     , savedItemLink = TP.url post
-                    , savedItemPermalink = "https://www.reddit.com" ++ (TP.permalink post)
+                    , savedItemPermalink = (normalize_link . TP.permalink) post
                     , savedItemBody = TP.selftext_html post
                     , savedItemSubreddit = TP.subreddit post
                     , savedItemScore = TP.score post
@@ -121,23 +121,24 @@ normalize_saved userId posts comments =
                     , savedItemThumbnail = Nothing
                     , savedItemTitle = TC.link_title comment
                     , savedItemLink = TC.link_permalink comment
-                    , savedItemPermalink = "https://www.reddit.com" ++ (TC.permalink comment)
+                    , savedItemPermalink = (normalize_link . TC.permalink) comment
                     , savedItemBody = Just (TC.body_html comment)
                     , savedItemSubreddit = TC.subreddit comment
                     , savedItemScore = TC.score comment
                     , savedItemCreatedUtc = TC.created_utc comment
                     , savedItemUserId = toSqlKey userId
                     }
+        normalize_link = (++) "https://www.reddit.com"
 
-update_saved :: [SavedItem] -> IO ()
-update_saved saved_items = do
-  db_file <- liftM db_file sfr_config
+updateSaved :: [SavedItem] -> IO ()
+updateSaved saved_items = do
+  db_file <- db_file <$> sfrConfig
   runSqlite (T.pack db_file) $ do
     runMigration migrateAll
     forM_ saved_items (\item -> do
         maybeItem <- getBy $
           UniqueSavedItem (savedItemUserId item) (savedItemIdentifier item)
         case maybeItem of
-          Nothing   -> insert $ item
+          Nothing   -> insert item
           Just (Entity itemId item) -> return itemId
       )

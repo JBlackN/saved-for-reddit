@@ -6,8 +6,8 @@ import Data.Int (Int64)
 import Data.Text hiding (take)
 import GHC.Generics
 
-data PostListing = PostListing { data' :: PostListingData
-                               } deriving (Generic, Show, Eq)
+newtype PostListing = PostListing { data' :: PostListingData
+                                  } deriving (Generic, Show, Eq)
 
 data PostListingData = PostListingData { after :: Maybe String
                                        , children :: [SavedPost]

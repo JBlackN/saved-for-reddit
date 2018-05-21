@@ -6,8 +6,8 @@ import Data.Int (Int64)
 import Data.Text hiding (take)
 import GHC.Generics
 
-data CommentListing = CommentListing { data' :: CommentListingData
-                                     } deriving (Generic, Show, Eq)
+newtype CommentListing = CommentListing { data' :: CommentListingData
+                                        } deriving (Generic, Show, Eq)
 
 data CommentListingData = CommentListingData { after :: Maybe String
                                              , children :: [SavedComment]

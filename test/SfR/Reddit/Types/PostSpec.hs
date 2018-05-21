@@ -51,9 +51,9 @@ main = hspec spec
 
 spec :: Spec
 spec = do
-  describe "PostListing" $ do
-    it "decoding from JSON works properly" $ do
+  describe "PostListing" $
+    it "decoding from JSON works properly" $
       (decode test_listing_json :: Maybe PostListing) `shouldBe` Just test_listing
-  describe "SavedPost" $ do
-    it "decoding from JSON works properly" $ do
+  describe "SavedPost" $
+    it "decoding from JSON works properly" $
       (decode test_saved_post_json :: Maybe SavedPost) `shouldBe` Just test_saved_post
