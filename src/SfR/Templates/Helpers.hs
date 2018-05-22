@@ -62,7 +62,7 @@ itemMetadata author subreddit = do
 --
 -- Uses item's parent author to determine item's type (posts have no parent).
 --
--- @See also:@ 'showSavedPost' and 'showSavedItem'.
+-- @See also:@ 'showSavedPost' and 'showSavedComment'.
 showSavedItem :: SavedItem -> Html
 showSavedItem item = do
   let parent_author = savedItemParentAuthor item
