@@ -18,8 +18,10 @@ import Data.Yaml
 import GHC.Generics
 
 -- | __Saved for Reddit__ web application's configuration.
-data SfRConfig = SfRConfig { -- | OAuth2 callback URL.
-                             callback_url :: String
+data SfRConfig = SfRConfig { -- | Web application's OAuth2 callback route path.
+                             callback_path :: String
+                             -- | OAuth2 callback URL.
+                           , callback_url :: String
                              -- | Web application's client ID.
                            , client_id :: String
                              -- | Web application's client secret.

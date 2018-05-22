@@ -25,16 +25,18 @@ import SfR.Actions (landing, login, callback, view, export, logout)
 -- [@\/@]: Landing page, see 'SfR.Actions.landing'.
 -- [@\/auth\/login@]: Redirect to [Reddit](https://www.reddit.com) OAuth page,
 --                    see 'SfR.Actions.login'.
--- [@\/auth\/reddit_oauth2\/callback@]: OAuth callback,
---                                      see 'SfR.Actions.callback'.
+-- [@'SfR.Config.callback_path'@]: OAuth callback,
+--                                 see 'SfR.Actions.callback'.
 -- [@\/view@]: Browsing page, see 'SfR.Actions.view'.
 -- [@\/export@]: JSON export & download, see 'SfR.Actions.export'.
 -- [@\/logout@]: Logout, see 'SfR.Actions.logout'.
-savedForReddit :: ScottyM ()
-savedForReddit = do
+savedForReddit :: String -- ^ OAuth2 callback path.
+               -> ScottyM () -- ^ [Scotty](https://github.com/scotty-web/scotty)
+                             --   web application.
+savedForReddit callback_path = do
   get "/" landing
   get "/auth/login" login
-  get "/auth/reddit_oauth2/callback" callback
+  get (literal callback_path) callback
   get "/view" view
   get "/export" export
   get "/logout" logout

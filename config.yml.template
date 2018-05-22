@@ -1,6 +1,7 @@
-callback_url: ""
+callback_path: /auth/reddit_oauth2/callback
+callback_url: http://localhost:8000/auth/reddit_oauth2/callback
 client_id: ""
 client_secret: ""
 db_file: ./saved-for-reddit.db
 port: 8000
-secure_cookie: true
+secure_cookie: false
