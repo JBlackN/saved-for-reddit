@@ -26,3 +26,22 @@
 - [Yaml](https://hackage.haskell.org/package/yaml)
 
 Více viz [package.yaml](package.yaml).
+
+## Instalace a použití
+
+Aplikace potřebuje `client ID` a `client secret`, které lze získat registrací na [https://ssl.reddit.com/prefs/apps/](https://ssl.reddit.com/prefs/apps/) a doplnit do souboru [config.yml](config.yml.template) (**viz instrukce níže**).
+
+```bash
+git clone https://github.com/JBlackN/saved-for-reddit.git  # stažení
+cd saved-for-reddit
+
+cp config.yml.template config.yml                          # konfigurace (inicializace)
+vi config.yml                                              # konfigurace (úprava a doplnění)
+stack build                                                # sestavení
+
+stack test                                                 # testování
+stack haddock                                              # dokumentace (sestavení)
+xdg-open .stack-work/install/*/*/*/doc/index.html          # dokumentace (prohlížení)
+
+stack exec saved-for-reddit-exe                            # spuštění
+```
