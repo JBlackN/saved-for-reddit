@@ -18,7 +18,7 @@ and its routes.
 module SfR where
 
 import Web.Scotty
-import SfR.Actions (landing, login, callback, view, export, logout)
+import SfR.Actions (landing, login, callback, sync, view, export, logout)
 
 -- | Saved for Reddit [Scotty](https://github.com/scotty-web/scotty) web application and its routes (all @GET@):
 --
@@ -27,6 +27,7 @@ import SfR.Actions (landing, login, callback, view, export, logout)
 --                    see 'SfR.Actions.login'.
 -- [@'SfR.Config.callback_path'@]: OAuth callback,
 --                                 see 'SfR.Actions.callback'.
+-- [@\/sync@]: Sync action, see 'SfR.Actions.sync'.
 -- [@\/view@]: Browsing page, see 'SfR.Actions.view'.
 -- [@\/export@]: JSON export & download, see 'SfR.Actions.export'.
 -- [@\/logout@]: Logout, see 'SfR.Actions.logout'.
@@ -37,6 +38,7 @@ savedForReddit callback_path = do
   get "/" landing
   get "/auth/login" login
   get (literal callback_path) callback
+  get "/sync" sync
   get "/view" view
   get "/export" export
   get "/logout" logout

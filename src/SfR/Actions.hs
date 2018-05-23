@@ -18,6 +18,7 @@ import Data.ByteString.Char8 as BSC
 import qualified Data.Text as T
 import qualified Data.Text.Lazy as TL
 import Database.Persist
+import Database.Persist.Sql (fromSqlKey)
 import Text.Blaze.Html.Renderer.Pretty (renderHtml)
 import Web.Scotty
 import Web.Scotty.Cookie
@@ -28,7 +29,7 @@ import SfR.Reddit.Auth (getAccessToken)
 import SfR.Reddit.Types
 import SfR.Storage (getOrCreateUser, getUserFromSession,
                     getUserSaved, normalizeSaved, updateSaved,
-                    userUsername, userSessionKey)
+                    userUsername, userSessionKey, userAccessToken)
 import SfR.Templates.Html (landingHtml, viewHtml)
 
 -- | Landing page action.
@@ -58,36 +59,61 @@ login = do
 -- (1) Receives authorization code from [Reddit](https://www.reddit.com) and
 --     uses it to obtain user's access token (see
 --     'SfR.Reddit.Auth.getAccessToken').
--- (2) Gets user's identity (username) and her/his saved posts and comments
---     (see 'SfR.Reddit.identity', 'SfR.Reddit.savedPosts',
---     'SfR.Reddit.savedComments').
--- (3) Registers the user within the app if needed and updates his saved items
---     in the database (see 'SfR.Storage.getOrCreateUser',
---     'SfR.Storage.normalizeSaved', 'SfR.Storage.updateSaved').
--- (4) Logs the user in and redirects to browsing view (see 'view').
---
--- @Note:@ [Reddit](https://www.reddit.com) posts and comments are obtained
--- separately due to differences in their data representations. Application
--- stores them in normalized form (see 'SfR.Storage.normalizeSaved').
+-- (2) Gets user's identity (username), see 'SfR.Reddit.identity'.
+-- (3) Registers the user within the app if needed (see
+--     'SfR.Storage.getOrCreateUser').
+-- (4) Logs the user in (sends session cookie) and redirects to sync action
+--     (see 'sync').
 callback :: ActionM ()
 callback = do
   code <- param "code"
   token <- liftIO $ access_token <$> getAccessToken code
 
   username <- liftIO $ name <$> identity token
-  savedPosts <- liftIO $ savedPosts token username ""
-  savedComments <- liftIO $ savedComments token username ""
-
-  (userId, user) <- liftIO $ getOrCreateUser username
-  let savedItems = normalizeSaved userId savedPosts savedComments
-  liftIO $ updateSaved savedItems
+  (_, user) <- liftIO $ getOrCreateUser username token
 
   secure_cookie <- liftIO $ secure_cookie <$> sfrConfig
   setHeader "Set-Cookie" (TL.pack ("sfr_session=" ++
                                    userSessionKey user ++
                                    "; HttpOnly; Path=/; MaxAge=3600" ++
                                    if secure_cookie then "; Secure" else ""))
-  redirect "/view"
+  redirect "/sync"
+
+-- | Sync action (refreshes saved items from [Reddit](https://www.reddit.com)).
+--
+-- (1) Attempts to get user from session (see 'SfR.Storage.getUserFromSession').
+--     Redirects to 'login' if unsuccesful.
+-- (2) Gets user's saved posts and comments
+--     from [Reddit](https://www.reddit.com) (see 'SfR.Reddit.savedPosts',
+--     'SfR.Reddit.savedComments').
+-- (3) Updates user's saved items in the database (see
+--     'SfR.Storage.normalizeSaved', 'SfR.Storage.updateSaved').
+-- (4) Redirects user to the browsing view (see 'view').
+--
+-- @Note:@ [Reddit](https://www.reddit.com) posts and comments are obtained
+-- separately due to differences in their data representations. Application
+-- stores them in normalized form (see 'SfR.Storage.normalizeSaved').
+sync :: ActionM ()
+sync = do
+  session <- getCookie "sfr_session"
+  case session of
+    Nothing  -> redirect "/"
+    Just key -> do
+      maybeUser <- liftIO $ getUserFromSession (T.unpack key)
+      case maybeUser of
+        Nothing                   -> redirect "/"
+        Just (Entity userId user) -> do
+          let username = userUsername user
+          let accessToken = userAccessToken user
+          case accessToken of
+            Nothing    -> redirect "/"
+            Just token -> do
+              savedPosts <- liftIO $ savedPosts token username ""
+              savedComments <- liftIO $ savedComments token username ""
+              let savedItems =
+                    normalizeSaved (fromSqlKey userId) savedPosts savedComments
+              liftIO $ updateSaved savedItems
+              redirect "/view"
 
 -- | Browsing view action.
 --

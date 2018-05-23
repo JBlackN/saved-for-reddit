@@ -77,6 +77,7 @@ share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
 User
   username String
   sessionKey String
+  accessToken String Maybe
   UniqueUser username
   UniqueSessionKey sessionKey
   deriving Show
@@ -105,11 +106,12 @@ instance ToJSON SavedItem
 -- Runs 'migrateAll' database migration.
 --
 -- (1) Generates new session key (UUID) for user.
--- (2) Creates and returns user if (s)he doesn't exist. Updates (session key)
---     and returns user otherwise. Also returns user ID.
+-- (2) Creates and returns user if (s)he doesn't exist. Updates (session key
+--     and access token) and returns user otherwise. Also returns user ID.
 getOrCreateUser :: String -- ^ [Reddit](https://www.reddit.com) username.
+                -> String -- ^ [Reddit](https://www.reddit.com) access token.
                 -> IO (Int64, User) -- ^ User ID and 'User' record.
-getOrCreateUser username = do
+getOrCreateUser username accessToken = do
   db_file <- db_file <$> sfrConfig
   runSqlite (T.pack db_file) $ do
     runMigration migrateAll
@@ -117,11 +119,12 @@ getOrCreateUser username = do
     maybeUser <- getBy $ UniqueUser username
     case maybeUser of
       Nothing -> do
-        userId <- insert $ User username sessionKey
+        userId <- insert $ User username sessionKey (Just accessToken)
         Just user <- get userId
         return (fromSqlKey userId, user)
       Just (Entity userId user) -> do
-        update userId [UserSessionKey =. sessionKey]
+        update userId [UserSessionKey =. sessionKey,
+                       UserAccessToken =. Just accessToken]
         Just user <- get userId
         return (fromSqlKey userId, user)
 

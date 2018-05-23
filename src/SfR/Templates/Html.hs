@@ -88,6 +88,8 @@ mainMenu =
       ul ! class_ "navbar-nav mr-auto" $ ""
       ul ! class_ "navbar-nav" $ do
         li ! class_ "nav-item" $
+          a "Refresh" ! class_ "nav-link" ! href "/sync"
+        li ! class_ "nav-item" $
           a "Export to JSON" ! class_ "nav-link" ! href "/export"
         li ! class_ "nav-item" $
           a "Logout" ! class_ "nav-link" ! href "/logout"
