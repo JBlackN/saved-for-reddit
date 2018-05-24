@@ -21,9 +21,9 @@ import Data.Char as C
 import Data.List as L
 import Data.Set as S hiding (filter)
 import Data.String (fromString)
+import Text.Blaze
 import Text.Blaze.Html5 as H
 import Text.Blaze.Html5.Attributes as A
-import Text.Blaze.Html5.Attributes.Extra as AE
 
 import SfR.Storage
 import SfR.Templates.Css (css)
@@ -46,34 +46,34 @@ layout content = do
       link ! rel "stylesheet" !
         href
           "https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css" !
-        integrity
+        customAttribute "integrity"
           "sha384-9gVQ4dYFwwWSjIDZnLEWnxCjeSWFphJiwGPXr1jddIhOegiu1FwO5qRGvFXOdJZ4" !
-        crossorigin "anonymous"
+        customAttribute "crossorigin" "anonymous"
       link ! rel "stylesheet" !
         href "https://use.fontawesome.com/releases/v5.0.13/css/all.css" !
-        integrity
+        customAttribute "integrity"
           "sha384-DNOHZ68U8hZfKXOrtjWvjxusGo9WQnrNx2sqG0tfsghAvtVlRW3tvkXWZh58N9jp" !
-        crossorigin "anonymous"
+        customAttribute "crossorigin" "anonymous"
       H.style (toHtml $ render css) ! type_ "text/css"
       H.title "Saved for Reddit"
     body $ do
       content
       script "" ! src "https://code.jquery.com/jquery-3.3.1.slim.min.js" !
-        integrity
+        customAttribute "integrity"
           "sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" !
-        crossorigin "anonymous"
+        customAttribute "crossorigin" "anonymous"
       script "" !
         src
           "https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.0/umd/popper.min.js" !
-        integrity
+        customAttribute "integrity"
           "sha384-cs/chFZiN24E4KMATLdqdvsezGxaGsi4hLGOzlXwp5UZB1LY//20VyM2taTB4QvJ" !
-        crossorigin "anonymous"
+        customAttribute "crossorigin" "anonymous"
       script "" !
         src
           "https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/js/bootstrap.min.js" !
-        integrity
+        customAttribute "integrity"
           "sha384-uefMccjFJAIv6A+rW+L4AHf99KvxDjWSu1z9VI8SKNVmz4sk7buKt/6v9KI65qnm" !
-        crossorigin "anonymous"
+        customAttribute "crossorigin" "anonymous"
 
 -- | Web application's main menu.
 mainMenu :: Html
@@ -81,8 +81,8 @@ mainMenu =
   nav ! class_ "navbar navbar-expand-lg navbar-light bg-light" $ do
     h1 "Saved for Reddit" ! class_ "navbar-brand mb-0 h1"
     button ! class_ "navbar-toggler" ! type_ "button" !
-      AE.data_ "toggler" "collapse" !
-      AE.data_ "target" "#main-menu-items" $
+      dataAttribute "toggler" "collapse" !
+      dataAttribute "target" "#main-menu-items" $
         H.span "" ! class_ "navbar-toggler-icon"
     H.div ! class_ "collapse navbar-collapse" ! A.id "main-menu-items" $ do
       ul ! class_ "navbar-nav mr-auto" $ ""
@@ -107,7 +107,7 @@ landingHtml =
             h1 "Saved for Reddit"
             a "Login" ! href "/auth/login" !
               class_ "btn btn-outline-primary mt-3" !
-              role "button"
+              customAttribute "role" "button"
 
 -- | Web application's browsing view page.
 --
