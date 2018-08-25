@@ -4,6 +4,8 @@
 
 [Reddit](https://www.reddit.com) allows users to save posts and comments. However, after thousand or so items are saved, the oldest ones start to become unreachable, which is undesirable for long term archivation. This web app enables users logged in through [Reddit](https://www.reddit.com) to load their saved items to local database without any restrictions and to browse them with basic filtering.
 
+![Saved for Reddit application screenshot](screenshot.png)
+
 ## Features
 
 - [x] Login through OAuth2.
