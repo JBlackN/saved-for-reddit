@@ -22,6 +22,7 @@ import Network.HTTP.Conduit
 import Network.HTTP.Simple
 
 import SfR.Config (callback_url, client_id, client_secret, sfrConfig)
+import SfR.Metadata (userAgent)
 import SfR.Reddit.Types (AccessToken)
 
 -- | Gets [Reddit](https://www.reddit.com) API access token.
@@ -47,15 +48,17 @@ getAccessToken auth_token = do
         BS.concat [
           "Basic ", B64.encode $ BSC.pack (client_id ++ ":" ++ client_secret)]
   let content_header = "application/x-www-form-urlencoded"
+  let user_agent_header = BSC.pack userAgent
   let request_body =
         LBSC.pack (
           "grant_type=authorization_code&code=" ++ auth_token ++
           "&redirect_uri=" ++ callback_url)
 
-  request''''    <- parseRequest "https://www.reddit.com/api/v1/access_token"
-  let request''' =  request'''' { method = "POST" }
-  let request''  =  addRequestHeader "Authorization" auth_header request'''
-  let request'   =  addRequestHeader "Content-Type" content_header request''
+  request'''''    <- parseRequest "https://www.reddit.com/api/v1/access_token"
+  let request'''' =  request''''' { method = "POST" }
+  let request'''  =  addRequestHeader "Authorization" auth_header request''''
+  let request''   =  addRequestHeader "Content-Type" content_header request'''
+  let request' =  addRequestHeader "User-Agent" user_agent_header request''
   let request    =  setRequestBodyLBS request_body request'
 
   (\response -> getResponseBody response :: AccessToken) <$> httpJSON request
