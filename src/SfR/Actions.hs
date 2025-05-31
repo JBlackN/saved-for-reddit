@@ -77,7 +77,7 @@ callback = do
                                    userSessionKey user ++
                                    "; HttpOnly; Path=/; MaxAge=3600" ++
                                    if secure_cookie then "; Secure" else ""))
-  redirect "/sync"
+  redirect "/view"
 
 -- | Sync action (refreshes saved items from [Reddit](https://www.reddit.com)).
 --
