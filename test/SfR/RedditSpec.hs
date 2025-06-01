@@ -25,4 +25,5 @@ spec =
                     "type&sort=new&t=all&limit=100&raw_json=1&after=after" ++
                     "\"\nmethod=\"GET\"\nproxy=Nothing\nrawBody=False\n" ++
                     "redirectCount=10\nresponseTimeout=ResponseTimeout" ++
-                    "Default\nrequestVersion=HTTP/1.1\n}\n"
+                    "Default\nrequestVersion=HTTP/1.1\nproxySecureMode=" ++
+                    "ProxySecureWithConnect\n}\n"
