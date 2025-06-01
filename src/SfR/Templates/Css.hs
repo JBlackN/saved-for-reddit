@@ -20,20 +20,20 @@ css :: Css
 css = do
   -- CSS Variables for Light Theme (default)
   ":root" ? do
-    custom "--primary-bg-color" "#ffffff"
-    custom "--secondary-bg-color" "#f8f9fa"
-    custom "--text-color" "#212529"
-    custom "--link-color" "#007bff"
-    custom "--border-color" "#dee2e6"
+    key "--primary-bg-color" "#ffffff"
+    key "--secondary-bg-color" "#f8f9fa"
+    key "--text-color" "#212529"
+    key "--link-color" "#007bff"
+    key "--border-color" "#dee2e6"
 
   -- Dark Theme using media query
-  query media [Only screen [Feature "prefers-color-scheme" (Just "dark")]] $ do
+  queryOnly Clay.screen [(Clay.feature "prefers-color-scheme", Clay.value "dark")] $ do
     ":root" ? do
-      custom "--primary-bg-color" "#121212"
-      custom "--secondary-bg-color" "#1e1e1e"
-      custom "--text-color" "#e0e0e0"
-      custom "--link-color" "#64b5f6"
-      custom "--border-color" "#424242"
+      key "--primary-bg-color" "#121212"
+      key "--secondary-bg-color" "#1e1e1e"
+      key "--text-color" "#e0e0e0"
+      key "--link-color" "#64b5f6"
+      key "--border-color" "#424242"
 
     -- Specific dark theme overrides
     ".text-muted" ? color "#a0a0a0"
