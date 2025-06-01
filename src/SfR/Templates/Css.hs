@@ -27,7 +27,7 @@ css = do
     key "--border-color" "#dee2e6"
 
   -- Dark Theme using media query
-  queryOnly Clay.screen [(Clay.feature "prefers-color-scheme", Clay.value "dark")] $ do
+  queryOnly screen [("prefers-color-scheme", "dark")] $ do
     ":root" ? do
       key "--primary-bg-color" "#121212"
       key "--secondary-bg-color" "#1e1e1e"
