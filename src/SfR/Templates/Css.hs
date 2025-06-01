@@ -36,7 +36,7 @@ css = do
       custom "--border-color" "#424242"
 
     -- Specific dark theme overrides
-    ".text-muted" ? color (Clay.lit "#a0a0a0")
+    ".text-muted" ? color "#a0a0a0"
 
   html ? height (pct 100)
   body ? do
