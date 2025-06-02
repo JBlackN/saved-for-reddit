@@ -16,9 +16,12 @@ import Clay
 import Prelude hiding (rem)
 
 -- | Web application's CSS stylesheets.
+-- All custom styles have been removed in favor of Tailwind CSS utility classes.
+-- This can be used for any remaining global styles or very specific component styles
+-- not easily covered by Tailwind.
 css :: Css
 css = do
-  html ? height (pct 100)
-  body ? height (pct 100)
-  ".saved-item-title" ? fontSize (rem 1.25)
-  p ? textAlign justify
+  -- Example of how you might add a very specific style if needed:
+  -- query "h1.specific-legacy-class" Clay.? do
+  --   color red
+  return () -- Ensures the Css block is valid if completely empty

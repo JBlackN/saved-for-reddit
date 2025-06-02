@@ -31,7 +31,7 @@ import SfR.Templates.Helpers (showSavedItem, subredditFilterOption)
 
 -- | Web application's layout.
 --
--- Application uses [Bootstrap](https://getbootstrap.com/)
+-- Application uses [Tailwind CSS](https://tailwindcss.com/)
 -- and [Font Awesome](https://fontawesome.com/).
 --
 -- See "SfR.Templates.Css" for additional CSS stylesheets.
@@ -44,55 +44,41 @@ layout content = do
       meta ! name "viewport" !
         A.content "width=device-width, initial-scale=1, shrink-to-fit=no"
       link ! rel "stylesheet" !
-        href
-          "https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css" !
-        customAttribute "integrity"
-          "sha384-9gVQ4dYFwwWSjIDZnLEWnxCjeSWFphJiwGPXr1jddIhOegiu1FwO5qRGvFXOdJZ4" !
-        customAttribute "crossorigin" "anonymous"
-      link ! rel "stylesheet" !
         href "https://use.fontawesome.com/releases/v5.0.13/css/all.css" !
         customAttribute "integrity"
           "sha384-DNOHZ68U8hZfKXOrtjWvjxusGo9WQnrNx2sqG0tfsghAvtVlRW3tvkXWZh58N9jp" !
         customAttribute "crossorigin" "anonymous"
+      link ! rel "stylesheet" ! href "https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
       H.style (toHtml $ render css) ! type_ "text/css"
       H.title "Saved for Reddit"
     body $ do
       content
-      script "" ! src "https://code.jquery.com/jquery-3.3.1.slim.min.js" !
-        customAttribute "integrity"
-          "sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" !
-        customAttribute "crossorigin" "anonymous"
-      script "" !
-        src
-          "https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.0/umd/popper.min.js" !
-        customAttribute "integrity"
-          "sha384-cs/chFZiN24E4KMATLdqdvsezGxaGsi4hLGOzlXwp5UZB1LY//20VyM2taTB4QvJ" !
-        customAttribute "crossorigin" "anonymous"
-      script "" !
-        src
-          "https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/js/bootstrap.min.js" !
-        customAttribute "integrity"
-          "sha384-uefMccjFJAIv6A+rW+L4AHf99KvxDjWSu1z9VI8SKNVmz4sk7buKt/6v9KI65qnm" !
-        customAttribute "crossorigin" "anonymous"
+      H.script ! type_ "text/javascript" $ preEscapedText
+        "const btn = document.getElementById('navbar-toggler-button');\
+        \const menu = document.getElementById('main-menu-items');\
+        \btn.addEventListener('click', () => {\
+        \  menu.classList.toggle('hidden');\
+        \});"
 
 -- | Web application's main menu.
 mainMenu :: Html
 mainMenu =
-  nav ! class_ "navbar navbar-expand-lg navbar-light bg-light" $ do
-    h1 "Saved for Reddit" ! class_ "navbar-brand mb-0 h1"
-    button ! class_ "navbar-toggler" ! type_ "button" !
+  nav ! class_ "flex lg:flex-row items-center justify-between p-4 bg-gray-100 shadow" $ do
+    h1 "Saved for Reddit" ! class_ "text-xl font-bold"
+    button ! class_ "lg:hidden p-2 rounded hover:bg-gray-200" ! type_ "button" !
+      A.id "navbar-toggler-button" ! -- Added ID for JS
       dataAttribute "toggler" "collapse" !
       dataAttribute "target" "#main-menu-items" $
-        H.span "" ! class_ "navbar-toggler-icon"
-    H.div ! class_ "collapse navbar-collapse" ! A.id "main-menu-items" $ do
-      ul ! class_ "navbar-nav mr-auto" $ ""
-      ul ! class_ "navbar-nav" $ do
-        li ! class_ "nav-item" $
-          a "Refresh" ! class_ "nav-link" ! href "/sync"
-        li ! class_ "nav-item" $
-          a "Export to JSON" ! class_ "nav-link" ! href "/export"
-        li ! class_ "nav-item" $
-          a "Logout" ! class_ "nav-link" ! href "/logout"
+        H.preEscapedText "<svg class=\"h-6 w-6 fill-current\" viewBox=\"0 0 24 24\"><path fill-rule=\"evenodd\" d=\"M4 5h16a1 1 0 0 1 0 2H4a1 1 0 1 1 0-2zm0 6h16a1 1 0 0 1 0 2H4a1 1 0 0 1 0-2zm0 6h16a1 1 0 0 1 0 2H4a1 1 0 0 1 0-2z\"/></svg>"
+    H.div ! class_ "hidden lg:flex flex-col lg:flex-row w-full lg:items-center lg:w-auto" ! A.id "main-menu-items" $ do
+      ul ! class_ "flex flex-col lg:flex-row lg:mr-auto" $ "" -- Empty ul for spacing or future items
+      ul ! class_ "flex flex-col lg:flex-row space-y-2 lg:space-y-0 lg:space-x-4" $ do
+        li $ -- nav-item class removed
+          a "Refresh" ! class_ "block lg:inline-block px-2 py-1 hover:text-blue-500" ! href "/sync"
+        li $ -- nav-item class removed
+          a "Export to JSON" ! class_ "block lg:inline-block px-2 py-1 hover:text-blue-500" ! href "/export"
+        li $ -- nav-item class removed
+          a "Logout" ! class_ "block lg:inline-block px-2 py-1 hover:text-blue-500" ! href "/logout"
 
 -- | Web application's landing page.
 --
@@ -100,13 +86,13 @@ mainMenu =
 landingHtml :: Html
 landingHtml =
   layout $
-    H.div ! class_ "d-flex align-items-center h-100" $
-      H.div ! class_ "container" $
-        H.div ! class_ "row text-center" $
-          H.div ! class_ "col" $ do
+    H.div ! class_ "flex items-center h-screen" $ -- d-flex align-items-center h-100
+      H.div ! class_ "container mx-auto px-4" $ -- container
+        H.div ! class_ "flex justify-center text-center" $ -- row text-center
+          H.div ! class_ "w-full" $ do -- col  <<< ADDED do HERE
             h1 "Saved for Reddit"
             a "Login" ! href "/auth/login" !
-              class_ "btn btn-outline-primary mt-3" !
+              class_ "py-2 px-4 font-semibold rounded-lg shadow-md text-blue-700 bg-transparent border border-blue-500 hover:bg-blue-500 hover:text-white hover:border-transparent mt-3" ! -- btn btn-outline-primary mt-3
               customAttribute "role" "button"
 
 -- | Web application's browsing view page.
@@ -128,16 +114,16 @@ viewHtml saved_items subreddit =
           where
             process item = subreddit == savedItemSubreddit item
     mainMenu
-    H.div ! class_ "mt-2 container mb-5" $ do
-      H.div ! class_ "row mt-3" $
-        H.div ! class_ "col" $
-          H.div ! class_ "card" $
-            H.div ! class_ "card-body" $
+    H.div ! class_ "mt-2 container mx-auto px-4 mb-5" $ do -- mt-2 container mb-5
+      H.div ! class_ "flex flex-wrap -mx-2 mt-3" $ -- row mt-3
+        H.div ! class_ "w-full px-2" $ -- col
+          H.div ! class_ "bg-white shadow-md rounded-lg overflow-hidden" $ -- card
+            H.div ! class_ "p-4" $ -- card-body
               H.div !
-                class_ "d-flex w-100 justify-content-between align-items-center" $ do
-                H.form ! class_ "form-inline" ! action "/view" ! method "get" $ do
-                  H.label "Subreddit" ! class_ "mr-3" ! for "subreddit"
-                  select ! class_ "custom-select" ! name "subreddit" !
+                class_ "flex w-full justify-between items-center" $ do -- d-flex w-100 justify-content-between align-items-center
+                H.form ! class_ "flex items-center space-x-2" ! action "/view" ! method "get" $ do -- form-inline
+                  H.label "Subreddit" ! class_ "mr-3" ! for "subreddit" -- mr-3
+                  select ! class_ "block appearance-none w-auto bg-white border border-gray-300 hover:border-gray-500 px-4 py-2 pr-8 rounded shadow leading-tight focus:outline-none focus:shadow-outline" ! name "subreddit" ! -- custom-select, w-auto for select
                     A.id "subreddit" $ do
                     let subreddits =
                           (L.sortOn (L.map C.toLower) .
@@ -148,12 +134,12 @@ viewHtml saved_items subreddit =
                       option "ALL" ! value "all" ! selected "selected" else
                       option "ALL" ! value "all"
                     forM_ subreddits (subredditFilterOption subreddit)
-                  input ! class_ "btn btn-outline-primary ml-3" ! type_ "submit" !
+                  input ! class_ "py-2 px-4 font-semibold rounded-lg shadow-md text-blue-700 bg-transparent border border-blue-500 hover:bg-blue-500 hover:text-white hover:border-transparent ml-3" ! type_ "submit" ! -- btn btn-outline-primary ml-3
                     value "Filter"
-                small ! class_ "text-muted" $ do
+                small ! class_ "text-gray-600 text-sm" $ do -- text-muted
                   (string . show . length) filtered_items
                   "saved items"
-      H.div ! class_ "row" $
-        H.div ! class_ "col" $
-          ul ! class_ "list-group mt-3" $
+      H.div ! class_ "flex flex-wrap -mx-2" $ -- row
+        H.div ! class_ "w-full px-2" $ -- col
+          ul ! class_ "mt-3 divide-y divide-gray-200" $ -- list-group mt-3
             forM_ filtered_items showSavedItem
